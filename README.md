@@ -16,7 +16,7 @@ go build .
 ## Run
 
 ```console
-PLUGIN_DESTREPO=https://github.com/foobar/destination-repo.git PLUGIN_TOKEN=<github token> drone-git-update-fork
+PLUGIN_DESTREPO=https://github.com/foobar/destination-repo.git PLUGIN_TOKEN=<github token> DRONE_BRANCH=master drone-git-update-fork
 ```
 
 ## Example drone step
@@ -34,5 +34,6 @@ steps:
       destrepo: https://github.com/foobar/destination-repo.git
       token:
         from_secret: github_token
+      force: true
 
 ```

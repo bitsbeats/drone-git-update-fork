@@ -12,6 +12,11 @@ import (
 type Config struct {
 	DestRepo string `required:"true"`
 	Token    string `required:"true"`
+	Force    bool   `optional`;
+}
+
+type DroneEnv struct {
+	Branch	string `optional`;
 }
 
 func main() {
@@ -21,6 +26,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("environment variable missing: %s", err)
 	}
+
+	drone := DroneEnv{}
+	err = envconfig.Process("drone", &drone)
+	if err != nil {
+		log.Fatalf("failed to fetch drone env var: %s", err)
+	}
+	log.Info("Got drone env: %s", drone)
 
 	r, err := git.PlainOpen(".")
 	if err != nil {
@@ -35,7 +47,16 @@ func main() {
 		log.Fatalf("failed to add remote: %s", err)
 	}
 
+	ref := ""
+
+	if cfg.Force == true {
+		ref = "+"
+	}
+
+	pushconfig := gitconfig.RefSpec(ref+drone.Branch+":"+drone.Branch)
+
 	err = r.Push(&git.PushOptions{
+		RefSpecs: []gitconfig.RefSpec{pushconfig},
 		RemoteName: "dest",
 		Auth: &http.BasicAuth{
 			Username: "abc123", // yes, this can be anything except an empty string
