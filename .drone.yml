@@ -20,11 +20,8 @@ steps:
     settings:
       repo: bitsbeats/drone-git-update-fork
       auto_tag: true
-      tags: latest
       username:
         from_secret: docker_user
       password:
         from_secret: docker_pass
-    when:
-      event:
-        - tag
+
