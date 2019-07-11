@@ -24,7 +24,7 @@ PLUGIN_DESTREPO=https://github.com/foobar/destination-repo.git PLUGIN_TOKEN=<git
 ```console
 ---
 name: default
-kind: Pipeline
+kind: pipeline
 
 steps:
 
