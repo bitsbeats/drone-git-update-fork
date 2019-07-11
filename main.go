@@ -51,11 +51,12 @@ func main() {
 
 	if cfg.Force == true {
 		ref = "+"
-		log.Info("force push requestet prepend: %s to refspec", ref)
+		log.Info("force push requestet prepend: ", ref)
 	}
 
-	pushconfig := gitconfig.RefSpec(ref+drone.Branch+":"+drone.Branch)
-	log.Info("refspec: %s", ref+drone.Branch+":dest/"+drone.Branch)
+	refspec := ref+drone.Branch+":dest/"+drone.Branch
+	pushconfig := gitconfig.RefSpec(refspec)
+	log.Info("refspec: ", refspec)
 
 	err = r.Push(&git.PushOptions{
 		RefSpecs: []gitconfig.RefSpec{pushconfig},
