@@ -51,9 +51,11 @@ func main() {
 
 	if cfg.Force == true {
 		ref = "+"
+		log.Info("force push requestet prepend: %s to refspec", ref)
 	}
 
 	pushconfig := gitconfig.RefSpec(ref+drone.Branch+":"+drone.Branch)
+	log.Info("refspec: %s", ref+drone.Branch+":dest/"+drone.Branch)
 
 	err = r.Push(&git.PushOptions{
 		RefSpecs: []gitconfig.RefSpec{pushconfig},
@@ -66,6 +68,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to push: %s", err)
 	}
-	log.Info("Update done")
+	log.Info("update done")
 
 }
