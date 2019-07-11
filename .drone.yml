@@ -1,6 +1,10 @@
 ---
+kind: pipeline
 name: default
-kind: Pipeline
+
+platform:
+  os: linux
+  arch: amd64
 
 steps:
   - name: go-build
