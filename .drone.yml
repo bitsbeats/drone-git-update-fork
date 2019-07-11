@@ -15,7 +15,7 @@ steps:
       - apk add -U --no-cache ca-certificates git binutils
       - go build .
 
-  - name: build-staging
+  - name: publish image
     image: plugins/docker
     settings:
       repo: bitsbeats/drone-git-update-fork
