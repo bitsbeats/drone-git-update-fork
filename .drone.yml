@@ -1,0 +1,25 @@
+---
+name: default
+kind: Pipeline
+
+steps:
+  - name: go-build
+    image: golang:alpine
+    environment:
+      CGO_ENABLED: "0"
+    commands:
+      - go build .
+
+  - name: build-staging
+    image: plugins/docker
+    settings:
+      repo: bitsbeats/drone-git-update-fork
+      auto_tag: true
+      tags: latest
+      username:
+        from_secret: docker_user
+      password:
+        from_secret: docker_pass
+    when:
+      event:
+        - tag
