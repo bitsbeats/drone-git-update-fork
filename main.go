@@ -54,7 +54,7 @@ func main() {
 		log.Info("force push requestet prepend: ", ref)
 	}
 
-	refspec := ref+drone.Branch
+	refspec := ref+drone.Branch+":"+drone.Branch
 	pushconfig := gitconfig.RefSpec(refspec)
 	log.Info("refspec: ", refspec)
 
