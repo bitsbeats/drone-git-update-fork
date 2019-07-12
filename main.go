@@ -85,28 +85,38 @@ func main() {
 		return nil
 	})
 
-	//ref := ""
-
-	//if cfg.Force == true {
-	//	ref = "+"
-	//	log.Info("force push requestet prepend: ", ref)
-	//}
-
-	//refspec := ref + drone.Branch + ":refs/remotes/dest/" + drone.Branch
-	//pushconfig := gitconfig.RefSpec(refspec)
-	//log.Info("refspec: ", refspec)
-
-	err = r.Push(&git.PushOptions{
-	//	RefSpecs:   []gitconfig.RefSpec{pushconfig},
-		RemoteName: "dest",
-		Auth: &http.BasicAuth{
-			Username: "abc123", // yes, this can be anything except an empty string
-			Password: cfg.Token,
-		},
-	})
-	if err != nil {
-		log.Warnf("failed to push: %s", err)
+	if cfg.Force == true {
+		err = r.Push(&git.PushOptions{
+			RefSpecs: []gitconfig.RefSpec{
+			  "+refs/*:refs/*",
+			  "+HEAD:refs/heads/HEAD",
+		  },
+		  RemoteName: "dest",
+		  Auth: &http.BasicAuth{
+			  Username: "abc123", // yes, this can be anything except an empty string
+			  Password: cfg.Token,
+		  },
+	  })
+	  if err != nil {
+		  log.Warnf("failed to push: %s", err)
+	  }
+	} else {
+		err = r.Push(&git.PushOptions{
+			RefSpecs: []gitconfig.RefSpec{
+			  "refs/*:refs/*",
+			  "HEAD:refs/heads/HEAD",
+		  },
+		  RemoteName: "dest",
+		  Auth: &http.BasicAuth{
+			  Username: "abc123", // yes, this can be anything except an empty string
+			  Password: cfg.Token,
+		  },
+	  })
+	  if err != nil {
+		  log.Warnf("failed to push: %s", err)
+	  }
 	}
+
 	log.Info("update done")
 
 }
