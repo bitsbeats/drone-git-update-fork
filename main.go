@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
 	gitconfig "gopkg.in/src-d/go-git.v4/config"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
@@ -12,11 +13,12 @@ import (
 type Config struct {
 	DestRepo string `required:"true"`
 	Token    string `required:"true"`
-	Force    bool   `optional`;
+	Force    bool
 }
 
+// DroneEnv environment variables
 type DroneEnv struct {
-	Branch	string `optional`;
+	Branch string
 }
 
 func main() {
@@ -32,12 +34,21 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to fetch drone env var: %s", err)
 	}
-	log.Info("Got drone env: %s", drone)
+	log.Info("Got drone env:", drone)
 
 	r, err := git.PlainOpen(".")
 	if err != nil {
-		log.Fatalf("failed to open: %s", err)
+		log.Fatalf("failed to open git repo: %s", err)
 	}
+
+	w, err := r.Worktree()
+	if err != nil {
+		log.Fatalf("failed to open worktree: %s", err)
+	}
+
+	err = w.Checkout(&git.CheckoutOptions{
+		Hash: plumbing.NewHash(drone.Branch),
+	})
 
 	_, err = r.CreateRemote(&gitconfig.RemoteConfig{
 		Name: "dest",
@@ -47,19 +58,7 @@ func main() {
 		log.Fatalf("failed to add remote: %s", err)
 	}
 
-	ref := ""
-
-	if cfg.Force == true {
-		ref = "+"
-		log.Info("force push requestet prepend: ", ref)
-	}
-
-	refspec := ref+drone.Branch+":"+drone.Branch
-	pushconfig := gitconfig.RefSpec(refspec)
-	log.Info("refspec: ", refspec)
-
-	err = r.Push(&git.PushOptions{
-		RefSpecs: []gitconfig.RefSpec{pushconfig},
+	err = r.Fetch(&git.FetchOptions{
 		RemoteName: "dest",
 		Auth: &http.BasicAuth{
 			Username: "abc123", // yes, this can be anything except an empty string
@@ -67,7 +66,46 @@ func main() {
 		},
 	})
 	if err != nil {
-		log.Fatalf("failed to push: %s", err)
+		log.Fatalf("failed to fetch remote: %s", err)
+	}
+
+	refs, err := r.References()
+	if err != nil {
+		log.Fatalf("failed to get references: %s", err)
+	}
+
+	err = refs.ForEach(func(ref *plumbing.Reference) error {
+		// The HEAD is omitted in a `git show-ref` so we ignore the symbolic
+		// references, the HEAD
+		if ref.Type() == plumbing.SymbolicReference {
+			return nil
+		}
+
+		log.Info(ref)
+		return nil
+	})
+
+	//ref := ""
+
+	//if cfg.Force == true {
+	//	ref = "+"
+	//	log.Info("force push requestet prepend: ", ref)
+	//}
+
+	//refspec := ref + drone.Branch + ":refs/remotes/dest/" + drone.Branch
+	//pushconfig := gitconfig.RefSpec(refspec)
+	//log.Info("refspec: ", refspec)
+
+	err = r.Push(&git.PushOptions{
+	//	RefSpecs:   []gitconfig.RefSpec{pushconfig},
+		RemoteName: "dest",
+		Auth: &http.BasicAuth{
+			Username: "abc123", // yes, this can be anything except an empty string
+			Password: cfg.Token,
+		},
+	})
+	if err != nil {
+		log.Warnf("failed to push: %s", err)
 	}
 	log.Info("update done")
 
